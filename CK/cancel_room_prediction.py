@@ -3,14 +3,16 @@
 # N19DCCN230 - Nguyễn Thị Yến Vy
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn import svm
-from sklearn.metrics import accuracy_score
 
 def room_cancel_prediction(input_data):
 
     hotel_dataset = pd.read_csv('Hotel_Reservations.csv')
+    # training, testing = train_test_split(hotel_dataset, test_size = 0.2, random_state=2)
+    # training.to_csv('train.csv',index=False)
+    # testing.to_csv('test.csv',index=False)
 #Tiền xử lý bộ dữ liệu
     meal_dic = {
         "Meal Plan 1": 1,
@@ -45,17 +47,12 @@ def room_cancel_prediction(input_data):
     hotel_dataset['booking_status'] = hotel_dataset['booking_status'].map(cancel_dic)
 #Huấn luyện dữ liệu 
     X = hotel_dataset.drop(hotel_dataset.columns[[0, 18]], axis=1)
-    scaler = StandardScaler()
-    scaler.fit(X)
-    stand_data = scaler.transform(X)
-    X = stand_data
-
     Y = hotel_dataset['booking_status']
 
     X_train, X_test, y_train, y_test = train_test_split(X,Y, test_size = 0.2, stratify=Y, random_state=2)
 
-    classifier = svm.SVC(kernel='linear')
-    classifier.fit(X_train, y_train)
+    model = svm.SVC(kernel='rbf', C=10)
+    model.fit(X_train, y_train)
 
 #Tiền xử lý dữ liệu cần dự đoán
     replaced_list1 = [x if x not in meal_dic else meal_dic[x] for x in input_data]
@@ -64,13 +61,16 @@ def room_cancel_prediction(input_data):
 
 
     data_to_np_array = np.asarray(replaced_list3)
-    input_data_reshaped = data_to_np_array.reshape(1, -1)
-    std_data = scaler.transform(input_data_reshaped)
-    prediction = classifier.predict(std_data)
+    std_data = data_to_np_array.reshape(1, -1)
+    prediction = model.predict(std_data)
+
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print('Accuracy:', accuracy)
     return prediction
 
 if __name__=="__main__":
-    input_data = [2, 0, 0, 5, 'Meal Plan 1', 0, 'Room_Type 4', 44, 2018, 10, 18, 'Online', 0, 0, 0, 133.44, 3]
+    input_data = [2,0,0,3,'Meal Plan 1',0,'Room_Type 1',271,2018,9,21,'Offline',0,0,0,101.33,1]
     prediction = room_cancel_prediction(input_data)
     if (prediction[0] == 1):
        print("Result of prediction: Not_Canceled.")
