@@ -51,7 +51,7 @@ def room_cancel_prediction(input_data):
 
     X_train, X_test, y_train, y_test = train_test_split(X,Y, test_size = 0.2, stratify=Y, random_state=2)
 
-    model = svm.SVC(kernel='rbf', C=10)
+    model = svm.SVC(kernel='linear')
     model.fit(X_train, y_train)
 
 #Tiền xử lý dữ liệu cần dự đoán
